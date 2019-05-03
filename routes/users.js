@@ -1,6 +1,96 @@
 const express = require('express');
 const routerUsers = express.Router();
-// needs to be linked to something...
-//const userDB = require('./../db/users.js');
+const knex = require('../database');
+
+routerUsers
+  .route('/:id')
+  .get((req, res) => {
+    const id = req.url.slice(1);
+    knex
+      .raw('SELECT * FROM users WHERE id = ?', [id])
+      .then((result) => {
+        if (result.rows.length === 0) {
+          throw err;
+        }
+        res.send(result.rows);
+      })
+      .catch((err) => {
+        res.send('{ "message": "User not found" }');
+      });
+  })
+  .delete((req, res) => {
+    const id = req.url.slice(1);
+    knex
+      .raw('SELECT * FROM users WHERE id = ?', [id])
+      .then((result) => {
+        if (result.rows.length === 0) {
+          throw "{ message: 'User not found' }";
+        }
+        knex.raw('DELETE FROM users WHERE id = ?', [id]).then((result) => {
+          res.send(`{ "message": "User id: ${id} successfully deleted" }`);
+        });
+      })
+      .catch((err) => {
+        res.send(err);
+      });
+  });
+
+routerUsers.route('/login').post((req, res) => {
+  const reqEmail = req.body.email;
+  const reqPassword = req.body.password;
+  knex
+    .raw('SELECT * FROM users WHERE email = ?', [reqEmail])
+    .then((result) => {
+      if (result.rows.length === 0) {
+        throw '{ "message": "User not found" }';
+      }
+      if (result.rows[0].password !== reqPassword) {
+        throw '{ "message": "Incorrect password" }';
+      }
+      res.send(result.rows);
+    })
+    .catch((err) => {
+      res.send(err);
+    });
+});
+
+routerUsers.route('/register').post((req, res) => {
+  const reqEmail = req.body.email;
+  const reqPassword = req.body.password;
+  knex
+    .raw('SELECT * FROM users WHERE email = ?', [reqEmail])
+    .then((result) => {
+      if (result.rows.length > 0) {
+        throw '{ "message": "User already exists" }';
+      }
+      knex
+        .raw('INSERT INTO users (email, password) values (?, ?) RETURNING *', [reqEmail, reqPassword])
+        .then((result) => {
+          res.send(result.rows);
+        });
+    })
+    .catch((err) => {
+      res.send(err);
+    });
+});
+
+routerUsers.route('/:id/forgot-password').put((req, res) => {
+  const endIndexSlash = req.url.indexOf('/', 1) - 1;
+  const id = req.url.substr(1, endIndexSlash);
+  const reqPassword = req.body.password;
+  knex
+    .raw('SELECT * FROM users WHERE id = ?', [id])
+    .then((result) => {
+      if (result.rows.length === 0) {
+        throw '{ "message": "User not found" }';
+      }
+      knex.raw('UPDATE users SET password = ? WHERE id = ?', [reqPassword, id]).then((result) => {
+        res.send('{ "message": "New password created!" }');
+      });
+    })
+    .catch((err) => {
+      res.send(err);
+    });
+});
 
 module.exports = routerUsers;
