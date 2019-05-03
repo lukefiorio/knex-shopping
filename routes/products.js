@@ -6,13 +6,10 @@ routerProducts.route('/').get((req, res) => {
   knex
     .raw('SELECT * FROM products')
     .then((result) => {
-      if (result.rows.length === 0) {
-        throw err;
-      }
       res.send(result.rows);
     })
     .catch((err) => {
-      res.send('{ "message": "No products found" }');
+      res.send(500, '{ "message": "Database erorr" }');
     });
 });
 
@@ -24,12 +21,12 @@ routerProducts
       .raw('SELECT * FROM products WHERE id = ?', [id])
       .then((result) => {
         if (result.rows.length === 0) {
-          throw err;
+          return res.send('{ "message": "Product not found" }');
         }
         res.send(result.rows);
       })
       .catch((err) => {
-        res.send('{ "message": "Product not found" }');
+        res.send(500, '{ "message": "Database error" }');
       });
   })
   .put((req, res) => {
@@ -43,10 +40,10 @@ routerProducts
       .raw('SELECT * FROM products WHERE id = ?', [id])
       .then((result) => {
         if (result.rows.length === 0) {
-          throw '{ "message": "Product not found" }';
+          return res.send(404, '{ "message": "Product not found" }');
         }
         if (!hasKeys) {
-          throw '{ "message": "Must post all product fields" }';
+          return res.send(400, '{ "message": "Must post all product fields" }');
         }
         knex
           .raw('UPDATE products SET title = ?, description = ?, inventory = ?, price = ? WHERE id = ?', [
@@ -61,7 +58,7 @@ routerProducts
           });
       })
       .catch((err) => {
-        res.send(err);
+        res.send(500, err);
       });
   })
   .delete((req, res) => {
@@ -70,14 +67,14 @@ routerProducts
       .raw('SELECT * FROM products WHERE id = ?', [id])
       .then((result) => {
         if (result.rows.length === 0) {
-          throw `{ "message": "Product id: ${id} not found" }`;
+          return res.send(404, `{ "message": "Product id: ${id} not found" }`);
         }
         knex.raw('DELETE FROM products WHERE id = ?', [id]).then((result) => {
           res.send(`{ "message": "Product id: ${id} successfully deleted" }`);
         });
       })
       .catch((err) => {
-        res.send(err);
+        res.send(500, err);
       });
   });
 
@@ -91,10 +88,10 @@ routerProducts.route('/new').post((req, res) => {
     .raw('SELECT * FROM products WHERE title = ?', [reqTitle])
     .then((result) => {
       if (result.rows.length > 0) {
-        throw '{ "message": "Product already exists" }';
+        return res.send(400, '{ "message": "Product already exists" }');
       }
       if (!hasKeys) {
-        throw '{ "message": "Must post all product fields" }';
+        return res.send(400, '{ "message": "Must post all product fields" }');
       }
       knex
         .raw('INSERT INTO products (title, description, inventory, price) values (?, ?, ?, ?) RETURNING *', [
@@ -108,7 +105,7 @@ routerProducts.route('/new').post((req, res) => {
         });
     })
     .catch((err) => {
-      res.send(err);
+      res.send(500, err);
     });
 });
 
