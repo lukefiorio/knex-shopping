@@ -1,6 +1,5 @@
 'use strict';
 
-const knex = require('./database');
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
@@ -15,12 +14,23 @@ app.use('/users', urlParser, users);
 app.use('/products', urlParser, products);
 app.use('/carts', urlParser, carts);
 
-knex
-  .select()
-  .from('users')
-  .then((result) => {
-    console.log(result);
-  });
+// knex
+//   .select()
+//   .from('users')
+//   .then((result) => {
+//     console.log(result);
+//   });
+
+// knex.raw('SELECT * FROM users WHERE id = ?', [1]).then((result) => {
+//   console.log(result.rows);
+// });
+
+// app.get('/', (req, res) => {
+//   knex.raw('SELECT * FROM users WHERE id = ?', [1]).then((result) => {
+//     console.log(result.rows);
+//     res.send(result.rows);
+//   });
+// });
 
 const server = app.listen(PORT, () => {
   console.log(`Express app is listening on port ${PORT}`);
