@@ -12,7 +12,7 @@ routerUsers
         if (result.rows.length === 0) {
           return res.send(404, '{ "message": "User not found" }');
         }
-        res.send(result.rows);
+        res.send(result.rows[0]);
       })
       .catch((err) => {
         res.send(500, err);
@@ -47,7 +47,7 @@ routerUsers.route('/login').post((req, res) => {
       if (result.rows[0].password !== reqPassword) {
         return res.send(400, '{ "message": "Incorrect password" }');
       }
-      res.send(result.rows);
+      res.send(result.rows[0]);
     })
     .catch((err) => {
       res.send(500, err);
@@ -66,7 +66,7 @@ routerUsers.route('/register').post((req, res) => {
       knex
         .raw('INSERT INTO users (email, password) values (?, ?) RETURNING *', [reqEmail, reqPassword])
         .then((result) => {
-          res.send(result.rows);
+          return res.send(result.rows[0]);
         });
     })
     .catch((err) => {
@@ -85,7 +85,7 @@ routerUsers.route('/:id/forgot-password').put((req, res) => {
         return res.send(404, '{ "message": "User not found" }');
       }
       knex.raw('UPDATE users SET password = ? WHERE id = ?', [reqPassword, id]).then((result) => {
-        res.send('{ "message": "New password created!" }');
+        return res.send('{ "message": "New password created!" }');
       });
     })
     .catch((err) => {

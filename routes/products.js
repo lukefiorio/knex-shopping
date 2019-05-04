@@ -23,7 +23,7 @@ routerProducts
         if (result.rows.length === 0) {
           return res.send('{ "message": "Product not found" }');
         }
-        res.send(result.rows);
+        res.send(result.rows[0]);
       })
       .catch((err) => {
         res.send(500, '{ "message": "Database error" }');
@@ -54,7 +54,7 @@ routerProducts
             id,
           ])
           .then((result) => {
-            res.send(`{ "message": "Product ${id} has been updated" }`);
+            return res.send(`{ "message": "Product ${id} has been updated" }`);
           });
       })
       .catch((err) => {
@@ -70,7 +70,7 @@ routerProducts
           return res.send(404, `{ "message": "Product id: ${id} not found" }`);
         }
         knex.raw('DELETE FROM products WHERE id = ?', [id]).then((result) => {
-          res.send(`{ "message": "Product id: ${id} successfully deleted" }`);
+          return res.send(`{ "message": "Product id: ${id} successfully deleted" }`);
         });
       })
       .catch((err) => {
@@ -101,7 +101,7 @@ routerProducts.route('/new').post((req, res) => {
           reqPrice,
         ])
         .then((result) => {
-          res.send(result.rows);
+          return res.send(result.rows);
         });
     })
     .catch((err) => {

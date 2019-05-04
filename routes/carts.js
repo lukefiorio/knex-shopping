@@ -16,10 +16,7 @@ routerCarts.route('/:user_id').get((req, res) => {
           [id],
         )
         .then((result) => {
-          res.send(result.rows);
-        })
-        .catch((err) => {
-          res.send(500, err);
+          return res.send(result.rows);
         });
     })
     .catch((err) => {
@@ -39,24 +36,16 @@ routerCarts
         if (result.rows.length === 0) {
           return res.send(404, '{ "message": "User does not exist" }');
         }
-        knex
-          .raw('SELECT id FROM products WHERE id = ?', [reqProductId])
-          .then((result) => {
-            if (result.rows.length === 0) {
-              return res.send(404, '{ "message": "Product does not exist" }');
-            }
-            knex
-              .raw('INSERT INTO carts (user_id, product_id) values (?, ?)', [reqUserId, reqProductId])
-              .then((result) => {
-                res.send('{ "success": true }');
-              })
-              .catch((err) => {
-                res.send(500, err);
-              });
-          })
-          .catch((err) => {
-            res.send(500, err);
-          });
+        knex.raw('SELECT id FROM products WHERE id = ?', [reqProductId]).then((result) => {
+          if (result.rows.length === 0) {
+            return res.send(404, '{ "message": "Product does not exist" }');
+          }
+          knex
+            .raw('INSERT INTO carts (user_id, product_id) values (?, ?)', [reqUserId, reqProductId])
+            .then((result) => {
+              return res.send('{ "success": true }');
+            });
+        });
       })
       .catch((err) => {
         res.send(500, err);
@@ -72,24 +61,16 @@ routerCarts
         if (result.rows.length === 0) {
           return res.send(404, '{ "message": "User does not exist" }');
         }
-        knex
-          .raw('SELECT id FROM products WHERE id = ?', [reqProductId])
-          .then((result) => {
-            if (result.rows.length === 0) {
-              return res.send(404, '{ "message": "Product does not exist" }');
-            }
-            knex
-              .raw('DELETE FROM carts WHERE user_id = ? AND product_id = ?', [reqUserId, reqProductId])
-              .then((result) => {
-                res.send('{ "success": true }');
-              })
-              .catch((err) => {
-                res.send(500, err);
-              });
-          })
-          .catch((err) => {
-            res.send(500, err);
-          });
+        knex.raw('SELECT id FROM products WHERE id = ?', [reqProductId]).then((result) => {
+          if (result.rows.length === 0) {
+            return res.send(404, '{ "message": "Product does not exist" }');
+          }
+          knex
+            .raw('DELETE FROM carts WHERE user_id = ? AND product_id = ?', [reqUserId, reqProductId])
+            .then((result) => {
+              return res.send('{ "success": true }');
+            });
+        });
       })
       .catch((err) => {
         res.send(500, err);
